@@ -1,5 +1,6 @@
 from infra.http.message.fsm import Input, Output, State, RequestMessageFSM
 import socket
+from typing import Dict
 
 from infra.http.status import ReasonMap
 
@@ -7,7 +8,7 @@ HTTP_VERSION = "1.1"
 
 
 class Message:
-    headers: dict[str, str] = dict()
+    headers: Dict[str, str] = dict()
     version: str = HTTP_VERSION
 
     def __init__(self, headers) -> None:
