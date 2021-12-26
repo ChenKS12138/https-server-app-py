@@ -1,0 +1,3 @@
+PyQt5
+pyOpenSSL
+Jinja2

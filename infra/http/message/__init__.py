@@ -1,5 +1,4 @@
-from typing import Callable
-import fsm
+from infra.http.message.fsm import Input, Output, State, RequestMessageFSM
 import socket
 
 from infra.http.status import ReasonMap
@@ -8,7 +7,7 @@ HTTP_VERSION = "1.1"
 
 
 class Message:
-    headers: map[str, str] = map()
+    headers: dict[str, str] = dict()
     version: str = HTTP_VERSION
 
     def __init__(self, headers) -> None:
@@ -39,69 +38,66 @@ class Response(Message):
     def to_bytes(self) -> bytes:
         msg = "HTTP/{} {} {}\r\n".format(self.version,
                                          self.code, ReasonMap[self.code])
-        for (key, value) in self.headers:
+        for (key, value) in self.headers.items():
             msg += "{}: {}\r\n".format(key, value)
         msg += "\r\n"
         return msg.encode() + self.body
 
 
 class Parser():
-    machine = fsm.RequestMessage
+    machine = RequestMessageFSM()
     conn: socket.socket
 
     def __init__(self, conn: socket.socket) -> None:
         self.conn = conn
 
     def parse(self) -> Request:
-        b = self.conn.recv(1)[0]
         rest_body_size = 0
         body = bytes()
-        headers = map()
-        header_field, header_value, method, path, version = str(), str(), str(), str(), str()
+        headers = dict()
+        header_field, header_value = bytes(), bytes()
+        method, path, version = bytes(), bytes(), bytes()
 
         while True:
+            current = self.conn.recv(1)
             input = None
-            if rest_body_size == 0 and (self.machine.state == fsm.State.Lf2 or self.machine.state == fsm.State.Body):
-                input = fsm.Input.End
-            elif b == b' ':
-                input = fsm.Input.Blank
-            elif b == b':':
-                input = fsm.Input.Colon
-            elif b == b'\r':
-                input = fsm.Input.Cr
-            elif b == b'\n':
-                input = fsm.Input.Lf
+            if rest_body_size == 0 and (self.machine.state == State.Lf2 or self.machine.state == State.Body):
+                input = Input.End
+            elif current == b' ':
+                input = Input.Blank
+            elif current == b':':
+                input = Input.Colon
+            elif current == b'\r':
+                input = Input.Cr
+            elif current == b'\n':
+                input = Input.Lf
             else:
-                input = fsm.Input.Alpha
+                input = Input.Alpha
 
             effect = self.machine.consume(input)
-            if effect == fsm.Output.EffectAppendHeader:
-                headers[header_field] = header_value
-                header_field, header_value = str(), str()
-            elif effect == fsm.Output.EffectAppendHeaderField:
-                header_field += b
-            elif effect == fsm.Output.EffectAppendHeaderValue:
-                header_value += b
-            elif effect == fsm.Output.EffectAppendMethod:
-                method += b
-            elif effect == fsm.Output.EffectAppendPath:
-                path += b
-            elif effect == fsm.Output.EffectAppendVersion:
-                version += b
-            else:
-                if effect == fsm.Output.EffectCheckEnd:
-                    rest_body_size = int(headers["Content-Length"])
-                elif effect == fsm.Output.EffectAppendBody:
-                    body += b
+
+            if effect == Output.EffectAppendHeader:
+                headers[header_field.decode()] = header_value.decode()
+                header_field, header_value = bytes(), bytes()
+            elif effect == Output.EffectAppendHeaderField:
+                header_field += current
+            elif effect == Output.EffectAppendHeaderValue:
+                header_value += current
+            elif effect == Output.EffectAppendMethod:
+                method += current
+            elif effect == Output.EffectAppendPath:
+                path += current
+            elif effect == Output.EffectAppendVersion:
+                version += current
+            elif effect != None:
+                if effect == Output.EffectCheckEnd:
+                    if "Content-Length" in headers:
+                        rest_body_size = int(headers["Content-Length"])
+                elif effect == Output.EffectAppendBody:
+                    body += current
                     rest_body_size -= 1
                 if rest_body_size == 0:
-                    request = Request(headers, method, path, body)
-                    self.machine.consume(fsm.Input.End)
+                    request = Request(
+                        headers, method.decode(), path.decode(), body)
+                    self.machine.consume(Input.End)
                     return request
-
-
-def consume(conn: socket.socket, on_data: Callable[[Request], Response]):
-    parser = Parser(conn)
-    request = parser.parse()
-    response = on_data(request)
-    conn.send(response.to_readable_buffer())

@@ -1,4 +1,3 @@
-from typing import List, Optional
 
 from enum import Enum
 
@@ -9,10 +8,9 @@ class FiniteStateMachineException(Exception):
 
 class FiniteStateMachine:
     state: Enum
-    transition: List[(Enum, Enum, Enum, Optional[Enum])
-                     ] = None  # current, input, next, output
+    transition = None  # current, input, next, output
 
-    def __init__(self, init: Enum, transition: List[(Enum, Enum, Enum, Optional[Enum])]) -> None:
+    def __init__(self, init: Enum, transition) -> None:
         self.state = init
         self.transition = transition
 
