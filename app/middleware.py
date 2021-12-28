@@ -8,13 +8,14 @@ from jinja2 import Template
 from os import path, listdir, remove
 from shutil import rmtree
 
-
+# 图标base64编码
 ICON_FILE = u"data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAABmJLR0QA/wD/AP+gvaeTAAAAcklEQVRIie3VQQqAIBCF4b/ocB6rZefUg9hGoURtZiIC8YG4cGY+VwojxgEBiA9rtwJeMPwVkpslNRE4vgbUiAVQIVagiiyN5tZZWVPLrW/rXVM6pIeuRkCcCUxgAj8BIe3ST+f6OAYEceh+tbx86h0sJ1orUB8gNFrWAAAAAElFTkSuQmCC"
 ICON_DIR = u"data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADIAAAAyCAYAAAAeP4ixAAAABmJLR0QA/wD/AP+gvaeTAAABCUlEQVRoge2ZTQ4BMRiGHyIkTuAUVjY4g4VD+VtZuZiVAzAcQWxY6MRkNLQM/cj7JF86aTrJ+3S+ZhYFIUQoTWABZMA5oDJgnCTpE+aECRTrBPRShH3Ejmu4fuD6pVu/AdqfCvUK+S6H0gLW7p3VRxK9SKwIQBc4Et+S79YOmHE915WIAIy4teW3a1qlSAoG3L7MHb8kAqW89YRBKqXhmdsDnW8HieRQnqgVnn+prYrUyhN5z4X+EFOSH3bv5uuwW0Ai1pCINSRiDYlYQyLWkIg1JGINiVhDItaQiDUkYg2JWOMvRTI3DlIEiWToRu9Fz4w012fv1MQn0nQyqe4DY2rrJLyXoUKIey7M1NDZgDzGvQAAAABJRU5ErkJggg=="
 ICON_SYMLINK = u"data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADIAAAAyCAYAAAAeP4ixAAAABmJLR0QA/wD/AP+gvaeTAAACDElEQVRoge2Yu0rEQBSGv/UComLngloJa2ch1t5gn0DQUixsvFQ+gXaCla1PIAj6ACouaqFiIbp46XwCLRQsVlGLnGC87SZzy7jkQJjM7Jl//i+TmSQLWfyveLd43ABd9QDiFCYc0JauMxjbIOVImbcwzo8Bbel2Apc4mBnbIOAIxgUIOIBxBQKWYVyCgEUY1yBgCSYNELAAkxYIGIZx8WSPe5SrCeZiDBgnL2moXpw/fTQpCupG0gtTE7xB0Yh3kYH4FrZA9om/Gx1Z8vAlVLffU5JtrbZ8aAvEfZh5DwLBF9+V9D/T1K+ZZ3OxDwDdcv5qcZxYoTojC8CL9N0A2jX1U7m1poE3gllYNKTvHGQUqEif+V9+7ydYL8cEa8hLkGbgVvJXfvl9BniOaJbxFGRScq8JoMLIAasRrW2+QngHsim5c9/a16T9DVgmAMvj8YzcSW5fpG1W2irAxLf8PHAC7Br2oS0Q3v8tUu8BHqVtSsdEQh/aAqHpDqkvSX1Lx4CCD22BcMcalPq51Md0DMT1YfIV5VDKcSl7pTw3OIZyJJmRouQ+ECzkJ6m3OvZhRKAk+TvAhZwP6xhQ9KEtUADupc+rlLtAo44JBR9GBIb4hAmPPWAEaHPow4hAgb+/20sOfRgTKALrBO9f4eI/SMGHvoChSPVT12lkIL5F3H/jfVgnVaNuZiQL3+ID+YBWVoOW43UAAAAASUVORK5CYII="
 ICON_UNKNOWN = u"data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADIAAAAyCAYAAAAeP4ixAAAABmJLR0QA/wD/AP+gvaeTAAACXUlEQVRoge3ZPWsUQRzH8c/FCBKIlYVYKKiIGnxAlCiC+FRoEcVKjC9AEMGARHwLYuML0BdhYyoLHwIS0SKYJmiTNPGBKEiiQfEslkQNO7s7d7e3F7gvTDPH/v6/397s7MxsTWvpwSDO4RS2YDN68QWTeINHeNni2i1hHYYxhXrB9hZXUavAbyrbMaF4gNXtKXa03fUqLuKrxkMst0843mbvK1zCzxyDMe07jrU1AfZhoUnjaW0O29oVoobxHEOTuI7d6EM/jmAU0znXjrUryJUME4u4Jnsm6sVt2cNyqCTvK/TgfaD4Es5GaF0QDvOsdZbTOR0oXMfNBvTuBLR+Y2cL/Aa5Fyg8JRkysazHu4DmSIxQT2Tho4H+h/gVqUUytB4EfjvYgF5h5qTfvYEmNAcDmq+acprDUqBofxOamwKa0zEisUPrY0rfLL5F6vxLPdC/oQnNXM5jxt+7NiNZsjfDYen/yOsYkdiZZgxbI6/J40ygf7bFdUqlV3j6Ha3QVzShF2Id+yv0FcWQ8BJlokJfhenBLdmLxsuVuSvIIcmhQ9Yy/okO2senMSJ/R/lZB+zfs7grO0AdP3CiKoNFuCE/xDxOVmWwCAOSQ4WsEM+xqyqDRXksHGBBsq/v6AcbDgiHmMWe6qzFEXrAFyXT8JohdIx6v0pTsdQk02lakL0V+opmo/QQSxo7pMgldodYlL5A/7zGDilyKStI2+kG6TS6QTqNsoLMS97gq1lTJyPLDOOD/08OQ2fHXbp0WcOkffl9UVaxMreZoc8FpdTsvhA7jW6QAoyn9JX2sP8BoWVXVMudA50AAAAASUVORK5CYII="
 
-
+# 获取对应图标函数
+# 参数：p: 路径
 def get_icon(p: str) -> str:
     if path.isfile(p):
         return ICON_FILE
@@ -25,8 +26,12 @@ def get_icon(p: str) -> str:
     else:
         return ICON_UNKNOWN
 
-
+# 中间件 接受文件路径，根据请求情况，在浏览器渲染不同界面
+# 参数：root：路径
+# 返回值：handler函数 (传入request对象，根据请求方法，处理请求，返回response对象的函数)
 def static_middleware(root: str) -> Callable[[Request], Response]:
+
+    # 四个网页界面模板
     not_found = Template("""<!DOCTYPE html>
 <html lang="en">
 <head>
@@ -53,6 +58,7 @@ def static_middleware(root: str) -> Callable[[Request], Response]:
     </body>
 </html>""")
 
+    # sricpt标签中有采用ajax处理文件上传（Post方法）、文件删除(Delete方法)的函数
     index = Template("""<!DOCTYPE html>
 <html lang="en">
 <head>
@@ -122,6 +128,8 @@ def static_middleware(root: str) -> Callable[[Request], Response]:
     </body>
 </html>""")
 
+    # 处理Get请求的函数
+    # 参数：request：Request对象 
     def get_handler(request: Request) -> Response:
         current = path.join(path.abspath(
             root), request.path[1:].replace("../", ""))
@@ -139,6 +147,8 @@ def static_middleware(root: str) -> Callable[[Request], Response]:
 
         return response
 
+    # 处理Post请求的函数
+    # 参数：request：Request对象
     def post_handler(request: Request) -> Response:
         current = path.join(path.abspath(
             root), request.path[1:].replace("../", ""))
@@ -155,7 +165,9 @@ def static_middleware(root: str) -> Callable[[Request], Response]:
         with open(current, 'w+b') as f:
             f.write(upload_file.data)
         return ok
-
+    
+    # 处理Delete请求的函数
+    # 参数：request：Request对象
     def delete_handler(request: Request) -> Response:
         current = path.join(path.abspath(
             root), request.path[1:].replace("../", ""))
@@ -171,7 +183,8 @@ def static_middleware(root: str) -> Callable[[Request], Response]:
         else:
             remove(current)
             return ok
-
+    
+    # 封装get_handler、get_handler、get_handler函数，根据请求方法分别处理
     def handler(request: Request) -> Response:
         if request.method == get_method(Method.Get):
             return get_handler(request)
