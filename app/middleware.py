@@ -16,6 +16,8 @@ ICON_UNKNOWN = u"data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADIAAAAyCAYAAAAeP
 
 # 获取对应图标函数
 # 参数：p: 路径
+
+
 def get_icon(p: str) -> str:
     if path.isfile(p):
         return ICON_FILE
@@ -29,6 +31,8 @@ def get_icon(p: str) -> str:
 # 中间件 接受文件路径，根据请求情况，在浏览器渲染不同界面
 # 参数：root：路径
 # 返回值：handler函数 (传入request对象，根据请求方法，处理请求，返回response对象的函数)
+
+
 def static_middleware(root: str) -> Callable[[Request], Response]:
 
     # 四个网页界面模板
@@ -129,7 +133,7 @@ def static_middleware(root: str) -> Callable[[Request], Response]:
 </html>""")
 
     # 处理Get请求的函数
-    # 参数：request：Request对象 
+    # 参数：request：Request对象
     def get_handler(request: Request) -> Response:
         current = path.join(path.abspath(
             root), request.path[1:].replace("../", ""))
@@ -140,7 +144,7 @@ def static_middleware(root: str) -> Callable[[Request], Response]:
             response.body = not_found.render(
                 title="Not Found"+request.path, path=request.path).encode()
         else:
-            files = [(item, path.join(request.path, item), get_icon(path.join(current, item)))
+            files = [(item, path.join(request.path, item).replace("\\", "/"), get_icon(path.join(current, item)))
                      for item in listdir(current)]
             response.body = index.render(
                 title=request.path, path=request.path, files=files).encode()
@@ -165,7 +169,7 @@ def static_middleware(root: str) -> Callable[[Request], Response]:
         with open(current, 'w+b') as f:
             f.write(upload_file.data)
         return ok
-    
+
     # 处理Delete请求的函数
     # 参数：request：Request对象
     def delete_handler(request: Request) -> Response:
@@ -183,7 +187,7 @@ def static_middleware(root: str) -> Callable[[Request], Response]:
         else:
             remove(current)
             return ok
-    
+
     # 封装get_handler、get_handler、get_handler函数，根据请求方法分别处理
     def handler(request: Request) -> Response:
         if request.method == get_method(Method.Get):
