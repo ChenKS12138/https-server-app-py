@@ -6,6 +6,8 @@ from infra.http.status import ReasonMap
 
 HTTP_VERSION = "1.1"
 
+# 定义一个父类Message
+
 
 class Message:
     headers: Dict[str, str] = dict()
@@ -13,6 +15,8 @@ class Message:
 
     def __init__(self, headers) -> None:
         self.headers = headers
+
+# 定义一个子类Request，属性为请求报文的内容
 
 
 class Request(Message):
@@ -25,6 +29,8 @@ class Request(Message):
         self.method = method
         self.path = path
         self.body = body
+
+# 定义一个子类Response，属性为响应报文的内容
 
 
 class Response(Message):
@@ -44,6 +50,8 @@ class Response(Message):
         msg += "\r\n"
         return msg.encode() + self.body
 
+# 定义一个Parse()类，解析响应报文的内容，调用了状态机处理
+
 
 class Parser():
     machine = RequestMessageFSM()
@@ -60,6 +68,7 @@ class Parser():
         method, path, version = bytes(), bytes(), bytes()
 
         while True:
+            # recv()函数在接收到不可用数据时会造成异常，暂时没找到修复方案
             current = self.conn.recv(1)
             input = None
             if rest_body_size == 0 and (self.machine.state == State.Lf2 or self.machine.state == State.Body):

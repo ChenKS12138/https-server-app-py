@@ -1,6 +1,8 @@
 from typing import Optional, List
 from infra.http.form_data.fsm import FormDataFSM, Input, Output, State
 
+# 定义文件的文件格式类
+
 
 class FormDataPart:
     name: Optional[str] = None
@@ -10,6 +12,8 @@ class FormDataPart:
 
     def __str__(self) -> str:
         return "name: {}, filename: {}, content_type: {}, data: {}".format(self.name, self.filename, self.content_type, self.data)
+
+# 定义Formdata类(一般有多个文件)
 
 
 class FormData:
@@ -25,6 +29,7 @@ class FormData:
                 return item
         return None
 
+    # 定义解析formdata(即request.body)的函数，
     @staticmethod
     def parse(raw: bytes):
         machine = FormDataFSM()

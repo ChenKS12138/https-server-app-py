@@ -86,7 +86,7 @@ def launch():
     font.setPointSize(18)
 
     # widget控件显示，并设置基础参数
-    window.resize(400,250)
+    window.resize(450,280)
     window.setLayout(layout)
     window.setFont(font)
     window.setWindowTitle("https_server_py")

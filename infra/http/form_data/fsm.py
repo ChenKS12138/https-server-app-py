@@ -109,3 +109,30 @@ def FormDataFSM() -> FiniteStateMachine:
         (State.EndDash1, Input.EndDash, State.EndDash2, Output.EffectFormData),
         (State.EndDash2, Input.End, State.End, None)
     ])
+
+#    --------------------------8e38e4e574a9351c
+#    Content-Disposition: form-data; name="file"; filename="aria2.conf"
+#    Content-Type: application/octet-stream
+
+#    # rpc-user=chenks
+#    # rpc-passwd=749923710
+#    rpc-secret=token
+#    enable-rpc=true
+#    rpc-allow-origin-all=true
+#    rpc-listen-all=true
+#    max-concurrent-downloads=5
+#    continue=true
+#    max-connection-per-server=5
+#    min-split-size=10M
+#    split=10
+#    max-overall-download-limit=0
+#    max-download-limit=0
+#    max-overall-upload-limit=0
+#    max-upload-limit=0
+#    dir=/Users/brucezhou/movie
+#    file-allocation=prealloc
+#    --------------------------8e38e4e574a9351c
+#    Content-Disposition: form-data; name="name"
+
+#    cattchen
+#    --------------------------8e38e4e574a9351c--

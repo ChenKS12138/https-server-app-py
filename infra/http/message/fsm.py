@@ -43,6 +43,7 @@ class Output(Enum):
     EffectAppendBody = auto()
 
 
+# 根据请求报文格式，返回一个解析请求报文的状态机
 def RequestMessageFSM() -> FiniteStateMachine:
     return FiniteStateMachine(init=State.End, transition=[
         (State.End, Input.Alpha, State.Method, Output.EffectAppendMethod),
@@ -82,3 +83,38 @@ def RequestMessageFSM() -> FiniteStateMachine:
         (State.Body, Input.Lf, State.Body, Output.EffectAppendBody),
         (State.Body, Input.End, State.End, None)
     ])
+
+
+#    POST / HTTP/1.1
+#    Host: localhost:3000
+#    User-Agent: curl/7.64.1
+#    Accept: */*
+#    Content-Length: 667
+#    Content-Type: multipart/form-data; boundary=------------------------8e38e4e574a9351c
+
+#    --------------------------8e38e4e574a9351c
+#    Content-Disposition: form-data; name="file"; filename="aria2.conf"
+#    Content-Type: application/octet-stream
+
+#    # rpc-user=chenks
+#    # rpc-passwd=749923710
+#    rpc-secret=token
+#    enable-rpc=true
+#    rpc-allow-origin-all=true
+#    rpc-listen-all=true
+#    max-concurrent-downloads=5
+#    continue=true
+#    max-connection-per-server=5
+#    min-split-size=10M
+#    split=10
+#    max-overall-download-limit=0
+#    max-download-limit=0
+#    max-overall-upload-limit=0
+#    max-upload-limit=0
+#    dir=/Users/brucezhou/movie
+#    file-allocation=prealloc
+#    --------------------------8e38e4e574a9351c
+#    Content-Disposition: form-data; name="name"
+
+#    cattchen
+#    --------------------------8e38e4e574a9351c--
