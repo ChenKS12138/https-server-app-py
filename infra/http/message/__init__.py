@@ -1,7 +1,7 @@
 from infra.http.message.fsm import Input, Output, State, RequestMessageFSM
 import socket
 from typing import Dict
-
+from urllib import parse
 from infra.http.status import ReasonMap
 
 HTTP_VERSION = "1.1"
@@ -99,6 +99,6 @@ class Parser():
                     rest_body_size -= 1
                 if rest_body_size == 0:
                     request = Request(
-                        headers, method.decode(), path.decode(), body)
+                        headers, method.decode(), parse.unquote(path.decode()), body)
                     self.machine.consume(Input.End)
                     return request
